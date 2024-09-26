@@ -1,0 +1,133 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import requests
+from io import StringIO
+import random
+
+def carregar_dados(url, tipo_arquivo='CSV'):
+    try:
+        if 'drive.google.com' in url:
+            # Extrair ID do arquivo do URL do Google Drive
+            file_id = url.split('/')[-2]
+            # Construir URL de download
+            download_url = f"https://drive.google.com/uc?id={file_id}"
+            # Fazer o download do conteúdo do arquivo
+            response = requests.get(download_url).content
+            # Ler os dados a partir do conteúdo baixado
+            df = pd.read_csv(StringIO(response.decode('utf-8')))
+        else:
+            df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        print(f"Erro ao carregar os dados: {e}")
+        return None
+
+def analise_exploratoria(df):
+    print("Primeiras linhas do DataFrame:")
+    print(df.head())
+    
+    print("\nInformações sobre o DataFrame:")
+    print(df.info())
+    
+    print("\nEstatísticas descritivas das variáveis numéricas:")
+    print(df.describe())
+    
+    # Plotar histograma
+    plot_histograma(df)
+    
+    
+    # Plotar gráfico de linha
+    plot_grafico_de_linha(df)
+    
+    # Plotar gráfico de dispersão
+    plot_grafico_de_dispersao(df)
+    
+    # Plotar boxplot
+    plot_boxplot(df)
+    
+    # Plotar matriz de correlação
+    identificacao_correlacoes(df)
+
+def plot_histograma(df):
+    print("\nHistograma:")
+    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+    if len(numeric_columns) > 0:
+        sns.histplot(data=df, x=random.choice(numeric_columns), kde=True)
+        plt.title('Histograma')
+        plt.show()
+    else:
+        print("Não há variáveis numéricas para plotar o histograma.")
+
+def plot_grafico_de_linha(df):
+    print("\nGráfico de Linha:")
+    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+    if len(numeric_columns) > 1:
+        cols = random.sample(list(numeric_columns), 2)
+        df[cols].plot()
+        plt.title('Gráfico de Linha')
+        plt.xlabel(cols[0])
+        plt.ylabel(cols[1])
+        plt.show()
+    else:
+        print("Não há duas variáveis numéricas para plotar o gráfico de linha.")
+
+def plot_grafico_de_dispersao(df):
+    print("\nGráfico de Dispersão:")
+    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+    if len(numeric_columns) > 1:
+        cols = random.sample(list(numeric_columns), 2)
+        sns.scatterplot(data=df, x=cols[0], y=cols[1])
+        plt.title('Gráfico de Dispersão')
+        plt.xlabel(cols[0])
+        plt.ylabel(cols[1])
+        plt.show()
+    else:
+        print("Não há duas variáveis numéricas para plotar o gráfico de dispersão.")
+
+def plot_boxplot(df):
+    print("\nBoxplot:")
+    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+    if len(numeric_columns) > 0:
+        sns.boxplot(data=df[numeric_columns])
+        plt.title('Boxplot')
+        plt.show()
+    else:
+        print("Não há variáveis numéricas para plotar o boxplot.")
+
+def identificacao_correlacoes(df):
+    print("\nMatriz de Correlação:")
+    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+    if len(numeric_columns) > 1:
+        sns.heatmap(df[numeric_columns].corr(), annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
+        plt.title('Matriz de Correlação')
+        plt.show()
+    else:
+        print("Não há correlações a serem identificadas com menos de duas variáveis numéricas.")
+
+def analise_especialista():
+    # Aqui você pode adicionar sua análise especializada
+    print("\nAnálise especializada:")
+    print("Essa é a análise especializada do assunto.")
+    print("Você pode adicionar suas próprias conclusões e insights aqui.")
+
+def main(urls):
+    for url in urls:
+        df = carregar_dados(url)
+        if df is not None:
+            print("\nAnálise exploratória para o arquivo:", url)
+            analise_exploratoria(df)
+            print("\n---")
+
+    # Após a análise exploratória, realizamos uma análise especializada
+    analise_especialista()
+
+# URLs dos arquivos de dados
+urls = [
+    "https://drive.google.com/file/d/1ZPJ1lw7O9NQ31JBJqSrt85eykvt6lAoq/view?usp=sharing"
+   
+    # Adicione mais URLs aqui...
+]
+
+# Executar a análise de dados
+main(urls)
